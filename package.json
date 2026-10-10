@@ -1,0 +1,36 @@
+{
+  "name": "@smart-ppe/common",
+  "version": "1.0.0",
+  "description": "Shared Contracts, Kafka Event Schemas, Constants, Types, and Utilities for Smart PPE Monitoring Microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smart-ppe-monitoring/smart-ppe-shared-contracts.git"
+  },
+  "keywords": [
+    "ppe",
+    "smart-ppe",
+    "microservices",
+    "contracts",
+    "kafka",
+    "zod"
+  ],
+  "author": "Smart PPE Team",
+  "license": "ISC",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "dependencies": {
+    "uuidv7": "^1.2.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^5.9.3"
+  }
+}
