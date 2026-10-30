@@ -64,11 +64,15 @@ export function getVietnamDayRange(dateString: string): {
 
 /**
  * Formats a Date to DD/MM/YYYY (default, Vietnamese standard) or YYYY-MM-DD in Vietnam timezone (UTC+7).
+ * Trả về chuỗi rỗng nếu date không hợp lệ thay vì 'NaN/NaN/NaN' gây lỗi PostgreSQL 22007 (SEC-16).
  */
 export function formatVietnamDate(
   date: Date,
   format: "DD/MM/YYYY" | "YYYY-MM-DD" = "DD/MM/YYYY",
 ): string {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return "";
+  }
   const localDate = new Date(date.getTime() + VIETNAM_OFFSET_MS);
   const year = localDate.getUTCFullYear();
   const month = String(localDate.getUTCMonth() + 1).padStart(2, "0");
@@ -95,6 +99,9 @@ export function parseVietnamDate(dateString: string): Date | null {
  * Formats a Date to readable Vietnamese datetime string (Asia/Ho_Chi_Minh).
  */
 export function formatVietnamDateTime(date: Date): string {
+  if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+    return "";
+  }
   return date.toLocaleString("vi-VN", { timeZone: VIETNAM_TIMEZONE });
 }
 

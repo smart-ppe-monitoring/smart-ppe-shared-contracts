@@ -1,3 +1,5 @@
+import net from "node:net";
+
 /**
  * IP & Subnet Matching Helper
  *
@@ -5,17 +7,42 @@
  */
 
 /**
- * Chuẩn hóa địa chỉ IP (loại bỏ IPv4-mapped IPv6 ::ffff:, khoảng trắng và chuyển về chữ thường)
+ * Chuẩn hóa địa chỉ IP (loại bỏ IPv4-mapped IPv6 ::ffff:, khoảng trắng, chuyển về chữ thường,
+ * và chuẩn hóa IPv6 về dạng canonical RFC 5952 chống lệch whitelist SEC-15).
  */
 export function normalizeIp(ip: string): string {
   if (!ip || typeof ip !== "string") return "";
-  const trimmed = ip.trim().toLowerCase();
+  let trimmed = ip.trim().toLowerCase();
+
+  // Loại bỏ cặp ngoặc vuông bao quanh IPv6 nếu có: "[::1]" -> "::1"
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    trimmed = trimmed.slice(1, -1);
+  }
+
+  // IPv4-mapped IPv6 (::ffff:127.0.0.1 hoặc ::ffff:7f00:1)
   if (trimmed.startsWith("::ffff:")) {
     const mapped = trimmed.slice(7);
     if (mapped.includes(".")) {
       return mapped;
     }
+    const parts = mapped.split(":");
+    if (parts.length === 2 && parts.every((p) => /^[0-9a-f]{1,4}$/i.test(p))) {
+      const high = parseInt(parts[0], 16);
+      const low = parseInt(parts[1], 16);
+      return `${(high >> 8) & 0xff}.${high & 0xff}.${(low >> 8) & 0xff}.${low & 0xff}`;
+    }
   }
+
+  // Chuẩn hóa canonical IPv6 RFC 5952 (VD: "0:0:0:0:0:0:0:1" -> "::1")
+  if (net.isIPv6(trimmed)) {
+    try {
+      const u = new URL(`http://[${trimmed}]`);
+      return u.hostname.slice(1, -1);
+    } catch {
+      return trimmed;
+    }
+  }
+
   return trimmed;
 }
 
