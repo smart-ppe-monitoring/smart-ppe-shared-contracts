@@ -39,12 +39,13 @@ export const standardIdParamSchema = createUuidParamSchema(
 /**
  * Standard reusable pagination query schema
  * Giới hạn page tối đa 1,000,000 để chống tràn số nguyên PostgreSQL 22003 (SEC-10)
+ * Giới hạn độ dài search (255) và sortBy (64) chống cạn kiệt tài nguyên / DoS (SEC-24)
  */
 export const paginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(1000000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  search: z.string().optional(),
-  sortBy: z.string().optional(),
+  search: z.string().trim().max(255).optional(),
+  sortBy: z.string().trim().max(64).optional(),
   order: z.enum(["asc", "desc"]).default("desc"),
 });
 

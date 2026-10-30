@@ -4,7 +4,7 @@ declare global {
       id?: string;
       traceId?: string;
       correlationId?: string;
-      user: {
+      user?: {
         id: string;
         email: string;
         role: string;
