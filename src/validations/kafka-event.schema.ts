@@ -91,9 +91,13 @@ export const ppeViolationDetectedPayloadSchema = z.object({
 export const ppeViolationDetectedKafkaEventSchema = z.object({
   eventId: z.string().uuid().describe("UUIDv7 định danh sự kiện"),
   topic: z.literal(KAFKA_TOPICS.PPE_VIOLATION_DETECTED),
-  traceId: z.string().min(1).describe("Distributed Tracing Correlation ID (x-request-id)"),
+  traceId: z
+    .string()
+    .min(1)
+    .max(128)
+    .describe("Distributed Tracing Correlation ID (x-request-id)"),
   timestamp: z.number().int().positive().describe("Epoch milliseconds"),
-  producer: z.string().min(1).default("ai-inference-engine"),
+  producer: z.string().min(1).max(64).default("ai-inference-engine"),
   payload: ppeViolationDetectedPayloadSchema,
 });
 
@@ -124,9 +128,9 @@ export const ppeIncidentResolvedPayloadSchema = z.object({
 export const ppeIncidentResolvedKafkaEventSchema = z.object({
   eventId: z.string().uuid(),
   topic: z.literal(KAFKA_TOPICS.PPE_INCIDENT_RESOLVED),
-  traceId: z.string().min(1),
+  traceId: z.string().min(1).max(128),
   timestamp: z.number().int().positive(),
-  producer: z.string().min(1).default("ppe-incident-service"),
+  producer: z.string().min(1).max(64).default("ppe-incident-service"),
   payload: ppeIncidentResolvedPayloadSchema,
 });
 
@@ -147,9 +151,9 @@ export const ppeCameraStatusChangedPayloadSchema = z.object({
 export const ppeCameraStatusChangedKafkaEventSchema = z.object({
   eventId: z.string().uuid(),
   topic: z.literal(KAFKA_TOPICS.PPE_CAMERA_STATUS_CHANGED),
-  traceId: z.string().min(1),
+  traceId: z.string().min(1).max(128),
   timestamp: z.number().int().positive(),
-  producer: z.string().min(1).default("ppe-camera-service"),
+  producer: z.string().min(1).max(64).default("ppe-camera-service"),
   payload: ppeCameraStatusChangedPayloadSchema,
 });
 
@@ -171,9 +175,9 @@ export const ppeSiteAlertTriggeredPayloadSchema = z.object({
 export const ppeSiteAlertTriggeredKafkaEventSchema = z.object({
   eventId: z.string().uuid(),
   topic: z.literal(KAFKA_TOPICS.PPE_SITE_ALERT_TRIGGERED),
-  traceId: z.string().min(1),
+  traceId: z.string().min(1).max(128),
   timestamp: z.number().int().positive(),
-  producer: z.string().min(1).default("ppe-monitoring-service"),
+  producer: z.string().min(1).max(64).default("ppe-monitoring-service"),
   payload: ppeSiteAlertTriggeredPayloadSchema,
 });
 

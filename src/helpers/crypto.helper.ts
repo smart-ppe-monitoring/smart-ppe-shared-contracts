@@ -6,12 +6,18 @@ const AUTH_TAG_LENGTH = 16; // 128-bit auth tag
 
 /**
  * Trích xuất / chuẩn hóa 32-byte key từ master key string qua SHA-256.
+ * Ném lỗi fail-fast nếu không có customKey hoặc ENCRYPTION_KEY (chống SEC-05).
  */
 function getMasterKeyBuffer(customKey?: string): Buffer {
   const rawKey =
     customKey ||
     process.env.ENCRYPTION_KEY ||
-    "default-smart-ppe-master-encryption-key-32b";
+    process.env.MASTER_ENCRYPTION_KEY;
+  if (!rawKey) {
+    throw new Error(
+      "ENCRYPTION_KEY (or MASTER_ENCRYPTION_KEY) environment variable is required when customKey is not provided",
+    );
+  }
   return crypto.createHash("sha256").update(rawKey).digest();
 }
 

@@ -99,28 +99,42 @@ export function formatVietnamDateTime(date: Date): string {
 }
 
 /**
+ * Maximum 32-bit signed integer delay for Node.js timers (setTimeout/setInterval).
+ * Equivalent to ~24.8 days (2,147,483,647 ms).
+ */
+export const MAX_TIMEOUT_MS = 2147483647;
+
+/**
  * Chuyển đổi chuỗi thời lượng (ví dụ: "15m", "1h", "7d", "30s") thành số milliseconds.
  * Nếu không khớp định dạng, trả về fallbackMs.
+ * Đảm bảo giá trị trả về không vượt quá MAX_TIMEOUT_MS (2^31 - 1) để tránh tràn 32-bit timer trong Node.js (SEC-08).
  */
 export function parseDurationToMs(
   duration: string | undefined | null,
   fallbackMs: number,
 ): number {
-  if (!duration || typeof duration !== "string") return fallbackMs;
+  const safeFallback = Math.min(fallbackMs, MAX_TIMEOUT_MS);
+  if (!duration || typeof duration !== "string") return safeFallback;
   const match = duration.match(/^(\d+)([smhd])$/);
-  if (!match) return fallbackMs;
+  if (!match) return safeFallback;
   const val = parseInt(match[1], 10);
   const unit = match[2];
+  let ms: number;
   switch (unit) {
     case "s":
-      return val * 1000;
+      ms = val * 1000;
+      break;
     case "m":
-      return val * 60 * 1000;
+      ms = val * 60 * 1000;
+      break;
     case "h":
-      return val * 60 * 60 * 1000;
+      ms = val * 60 * 60 * 1000;
+      break;
     case "d":
-      return val * 24 * 60 * 60 * 1000;
+      ms = val * 24 * 60 * 60 * 1000;
+      break;
     default:
-      return fallbackMs;
+      return safeFallback;
   }
+  return Math.min(ms, MAX_TIMEOUT_MS);
 }
