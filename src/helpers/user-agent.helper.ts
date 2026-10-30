@@ -55,13 +55,14 @@ export function parseUserAgent(uaString: string | undefined): string {
 }
 
 /**
- * Generates SHA-256 hash from raw User-Agent string and optional device identifier
+ * Generates SHA-256 hash from raw User-Agent string and optional device identifier.
+ * Uses structured array serialization to prevent delimiter collisions (SEC-06).
  */
 export function generateDeviceHash(
   uaString: string | undefined,
   extraIdentifier?: string,
 ): string {
   const cleanUa = uaString || "unknown";
-  const data = extraIdentifier ? `${cleanUa}#${extraIdentifier}` : cleanUa;
-  return crypto.createHash("sha256").update(data).digest("hex");
+  const payload = JSON.stringify([cleanUa, extraIdentifier || ""]);
+  return crypto.createHash("sha256").update(payload).digest("hex");
 }

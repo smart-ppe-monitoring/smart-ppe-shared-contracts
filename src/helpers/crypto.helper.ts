@@ -6,12 +6,18 @@ const AUTH_TAG_LENGTH = 16; // 128-bit auth tag
 
 /**
  * Trích xuất / chuẩn hóa 32-byte key từ master key string qua SHA-256.
+ * Ném lỗi fail-fast nếu không có customKey hoặc ENCRYPTION_KEY (chống SEC-05).
  */
 function getMasterKeyBuffer(customKey?: string): Buffer {
   const rawKey =
     customKey ||
     process.env.ENCRYPTION_KEY ||
-    "default-smart-ppe-master-encryption-key-32b";
+    process.env.MASTER_ENCRYPTION_KEY;
+  if (!rawKey) {
+    throw new Error(
+      "ENCRYPTION_KEY (or MASTER_ENCRYPTION_KEY) environment variable is required when customKey is not provided",
+    );
+  }
   return crypto.createHash("sha256").update(rawKey).digest();
 }
 
@@ -66,6 +72,18 @@ export function decryptSecret(
     throw new Error("Invalid hex encoding in encrypted secret");
   }
 
+  if (ivHex.length !== IV_LENGTH * 2) {
+    throw new Error(
+      `Invalid initialization vector length; must be ${IV_LENGTH} bytes (${IV_LENGTH * 2} hex chars)`,
+    );
+  }
+
+  if (authTagHex.length !== AUTH_TAG_LENGTH * 2) {
+    throw new Error(
+      `Invalid authentication tag length; must be ${AUTH_TAG_LENGTH} bytes (${AUTH_TAG_LENGTH * 2} hex chars)`,
+    );
+  }
+
   const key = getMasterKeyBuffer(customKey);
   const iv = Buffer.from(ivHex, "hex");
   const authTag = Buffer.from(authTagHex, "hex");
@@ -108,6 +126,9 @@ export function generateApiKey(prefix = "ak_live_"): {
  * Băm API Key thành chuỗi SHA-256 hex để tra cứu trong database.
  */
 export function hashApiKey(key: string): string {
+  if (!key || typeof key !== "string" || key.trim().length === 0) {
+    throw new Error("API key must be a non-empty string");
+  }
   return crypto.createHash("sha256").update(key.trim()).digest("hex");
 }
 
@@ -196,6 +217,8 @@ export function verifyHmacSignature(
  * Tương thích với verificationToken, passwordResetToken và refreshToken.
  */
 export function hashToken(token: string): string {
-  if (!token) return "";
+  if (!token || typeof token !== "string" || token.trim().length === 0) {
+    throw new Error("Token must be a non-empty string");
+  }
   return crypto.createHash("sha256").update(token).digest("hex");
 }

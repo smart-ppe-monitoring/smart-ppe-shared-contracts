@@ -9,11 +9,15 @@ export function renderTemplateString(
   variables: Record<string, unknown> = {},
   options: { escapeHtml?: boolean } = { escapeHtml: true },
 ): string {
-  if (!template) return "";
+  if (!template || typeof template !== "string") return "";
+  if (!variables || typeof variables !== "object") return template;
 
-  const shouldEscape = options.escapeHtml ?? true;
+  const shouldEscape = options?.escapeHtml ?? true;
 
   return template.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_match, key) => {
+    if (!Object.prototype.hasOwnProperty.call(variables, key)) {
+      return "";
+    }
     const value = variables[key];
     if (value === undefined || value === null) {
       return "";
