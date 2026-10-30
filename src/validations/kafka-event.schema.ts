@@ -8,12 +8,13 @@ import {
 
 /**
  * Zod Schema cho tọa độ Bounding Box (chuẩn hóa tỷ lệ [0, 1] hoặc pixel)
+ * Bắt buộc .finite() để chặn giá trị Infinity gây crash đồ họa và lỗi JSON serialization (SEC-09)
  */
 export const ppeBoundingBoxSchema = z.object({
-  x: z.number().min(0).describe("Tọa độ góc trên bên trái trục X"),
-  y: z.number().min(0).describe("Tọa độ góc trên bên trái trục Y"),
-  width: z.number().positive().describe("Chiều rộng bounding box"),
-  height: z.number().positive().describe("Chiều cao bounding box"),
+  x: z.number().finite().min(0).describe("Tọa độ góc trên bên trái trục X"),
+  y: z.number().finite().min(0).describe("Tọa độ góc trên bên trái trục Y"),
+  width: z.number().finite().positive().describe("Chiều rộng bounding box"),
+  height: z.number().finite().positive().describe("Chiều cao bounding box"),
 });
 
 /**
@@ -55,12 +56,12 @@ export const ppeViolationDetectedPayloadSchema = z.object({
     .datetime()
     .describe("Thời điểm phát hiện vi phạm theo chuẩn ISO 8601"),
   site: z.object({
-    id: z.string().describe("ID công trường"),
+    id: z.string().uuid().describe("ID công trường (UUIDv7)"),
     code: z.string().min(1).describe("Mã công trường (VD: SITE-HANOI-01)"),
     name: z.string().min(1).describe("Tên công trường"),
   }),
   camera: z.object({
-    id: z.string().describe("ID camera"),
+    id: z.string().uuid().describe("ID camera (UUIDv7)"),
     code: z.string().min(1).describe("Mã camera (VD: CAM-GATE-01)"),
     name: z.string().min(1).describe("Tên vị trí camera"),
     zone: z.string().min(1).describe("Khu vực giám sát (VD: Cổng vào khu vực thi công A)"),
@@ -109,7 +110,7 @@ export const ppeViolationDetectedKafkaEventSchema = z.object({
 export const ppeIncidentResolvedPayloadSchema = z.object({
   incidentId: z.string().uuid(),
   violationId: z.string().uuid(),
-  siteId: z.string(),
+  siteId: z.string().uuid(),
   resolvedBy: z.object({
     userId: z.string().uuid(),
     fullName: z.string().min(1),
@@ -139,9 +140,9 @@ export const ppeIncidentResolvedKafkaEventSchema = z.object({
  * Được phát ra khi Camera Service hoặc Watchdog phát hiện camera online/offline.
  */
 export const ppeCameraStatusChangedPayloadSchema = z.object({
-  cameraId: z.string(),
+  cameraId: z.string().uuid(),
   cameraCode: z.string(),
-  siteId: z.string(),
+  siteId: z.string().uuid(),
   previousStatus: z.enum(["ONLINE", "OFFLINE", "DEGRADED"]),
   currentStatus: z.enum(["ONLINE", "OFFLINE", "DEGRADED"]),
   reason: z.string().optional(),
@@ -162,7 +163,7 @@ export const ppeCameraStatusChangedKafkaEventSchema = z.object({
  * Được phát ra khi số lượng vi phạm tại một công trường vượt ngưỡng an toàn.
  */
 export const ppeSiteAlertTriggeredPayloadSchema = z.object({
-  siteId: z.string(),
+  siteId: z.string().uuid(),
   siteCode: z.string(),
   siteName: z.string(),
   alertLevel: z.enum(["WARNING", "CRITICAL"]),

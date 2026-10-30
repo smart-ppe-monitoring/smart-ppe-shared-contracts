@@ -38,9 +38,10 @@ export const standardIdParamSchema = createUuidParamSchema(
 
 /**
  * Standard reusable pagination query schema
+ * Giới hạn page tối đa 1,000,000 để chống tràn số nguyên PostgreSQL 22003 (SEC-10)
  */
 export const paginationQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
+  page: z.coerce.number().int().min(1).max(1000000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
   search: z.string().optional(),
   sortBy: z.string().optional(),
@@ -49,6 +50,7 @@ export const paginationQuerySchema = z.object({
 
 /**
  * Standard Route Key validation schema for system settings, feature flags, configuration keys
+ * Chặn các từ khóa prototype pollution (__proto__, constructor, prototype) và path traversal (SEC-11)
  */
 export const routeKeySchema = z
   .string({
@@ -60,6 +62,22 @@ export const routeKeySchema = z
   .regex(
     /^[a-z0-9_.-]+$/i,
     "Key must contain only letters, numbers, dots, hyphens, and underscores",
+  )
+  .refine(
+    (val) => {
+      const parts = val.split(".");
+      return (
+        !parts.some((part) =>
+          ["__proto__", "constructor", "prototype", ""].includes(
+            part.toLowerCase(),
+          ),
+        ) && !val.includes("..")
+      );
+    },
+    {
+      message:
+        "Key cannot contain reserved prototype property names or directory traversal",
+    },
   );
 
 /**
