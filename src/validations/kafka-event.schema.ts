@@ -74,6 +74,14 @@ export const ppeViolationDetectedPayloadSchema = z.object({
         message: "URL must use http or https protocol",
       })
       .describe("URL ảnh chụp bằng chứng lưu trên MinIO/R2"),
+    referenceSnapshotUrl: z
+      .string()
+      .url()
+      .refine((url) => /^https?:\/\//i.test(url), {
+        message: "URL must use http or https protocol",
+      })
+      .optional()
+      .describe("URL ảnh đối chứng chụp trước đó (lúc tuân thủ hoặc t=0s)"),
     clipUrl: z
       .string()
       .url()
