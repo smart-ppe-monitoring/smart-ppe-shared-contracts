@@ -25,14 +25,18 @@ export type RestrictedAreaStatus =
 
 export const DEFAULT_SAFETY_CONFIG = {
   CONFIDENCE_THRESHOLD: 0.8,
-  CONFIRMATION_DURATION: 3,
+  HELMET_CONFIRMATION_DURATION: 2,
+  CONFIRMATION_DURATION: 2,
+  VEST_CONFIRMATION_DURATION: 4,
   COOLDOWN_DURATION: 30,
   ENABLE_NO_HELMET: true,
   ENABLE_NO_VEST: true,
   ENABLE_RESTRICTED_AREA: true,
 
   confidenceThreshold: 0.8,
-  confirmationDuration: 3,
+  helmetConfirmationDuration: 2,
+  confirmationDuration: 2,
+  vestConfirmationDuration: 4,
   cooldownDuration: 30,
   enableNoHelmet: true,
   enableNoVest: true,
