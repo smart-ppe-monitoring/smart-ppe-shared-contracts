@@ -40,7 +40,7 @@ export const NOTIFICATION_CHANNEL = {
   IN_APP: "IN_APP",
   WEB: "WEB",
   EMAIL: "EMAIL",
-  ZALO_ZNS: "ZALO_ZNS",
+  ZALO_BOT: "ZALO_BOT",
   WEBHOOK: "WEBHOOK",
 } as const;
 
@@ -124,6 +124,11 @@ export const DEFAULT_PREFERENCES = [
   {
     channel: NOTIFICATION_CHANNEL.EMAIL,
     enabled: true,
+    severityThreshold: NOTIFICATION_SEVERITY.HIGH,
+  },
+  {
+    channel: NOTIFICATION_CHANNEL.ZALO_BOT,
+    enabled: false,
     severityThreshold: NOTIFICATION_SEVERITY.HIGH,
   },
 ] as const;
